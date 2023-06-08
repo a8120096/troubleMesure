@@ -1,1 +1,8 @@
 /* 共通CSS */
+/* スタイルの設定 */
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+

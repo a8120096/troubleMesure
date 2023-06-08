@@ -13,22 +13,53 @@
     <title>Top</title>
     <script>
         osql.requireLogin();
+
+        var me;
+        var studentid;
+
         $().ready(function () {
             getProfile();
         })
 
         async function getProfile() {
-            var me = await osql.getMe();
+            me = await osql.getMe();
+            studentid = me.studentid;
             document.getElementById('user_name').innerHTML = `ようこそ ${me.fname} さん`;
             console.log(me);
         }
 
+        function submit() {
+            console.log('submit');
+            var selectedValue = getTroublelLevel();
+            insertTroubleLevel(selectedValue);
+
+        }
+
+        function getTroublelLevel() {
+            // 選択されたトラブルレベルを取得
+            var selectedValue = document.querySelector('input[name="trouble"]:checked').value;
+            return selectedValue;
+        }
+
+        async function insertTroubleLevel(value) {
+            // トラブルレベルをTroublesテーブルに追加
+            var sql = `insert into Troubles(studentid, trouble, createdat) values("${studentid}", "${value}", now());`;
+            var objects = await osql.connect(sql);
+        }
     </script>
 </head>
 
 <body>
     <h1>troubleMeasure</h1>
     <p id="user_name"></p>
+    <input type="radio" name="trouble" value=1>
+    <input type="radio" name="trouble" value=2>
+    <input type="radio" name="trouble" value=3>
+    <input type="radio" name="trouble" value=4>
+    <input type="radio" name="trouble" value=5>
+    <br>
+    <button onclick="submit()">送信</button>
+
 </body>
 
 </html>

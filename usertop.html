@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/osql.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+
+    <title>Top</title>
+    <script>
+        osql.requireLogin();
+
+        async function login() {
+            var me = await osql.getMe();
+            console.log(me);
+            var studentid = me.studentid;
+            console.log(`${studentid}`);
+            var name = me.fname;
+            console.log(name);
+            var sql = `insert ignore into Users (studentid, name) values("${studentid}", "${name}");`;
+            var objects = await osql.connect(sql);
+            console.log(objects);
+            location.href = 'usertop.html';
+        }
+
+    </script>
+</head>
+
+<body>
+    <h1>troubleMeasure</h1>
+    <button onclick="login()">ログイン</button>
+</body>
+
+</html>

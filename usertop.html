@@ -42,7 +42,10 @@
                 // startButtonの無効化
                 var startButton = document.getElementById("startButton");
                 startButton.disabled = true;
-                document.getElementById("startMesseage").innerHTML = "開始しました"
+                document.getElementById("messeage").innerHTML = "開始しました";
+                // finishButtonの有効化
+                var finishButton = document.getElementById("finishButton");
+                finishButton.disabled = false;
             }
             // タイマーを開始
             startTimer();
@@ -121,11 +124,10 @@
                 // finishButtonの無効化
                 var finishButton = document.getElementById("finishButton");
                 finishButton.disabled = true;
-                document.getElementById("finishMesseage").innerHTML = "終了しました";
+                document.getElementById("messeage").innerHTML = "終了しました";
                 // startButtonの有効化
                 var startButton = document.getElementById("startButton");
                 startButton.disabled = false;
-                document.getElementById("startMesseage").innerHTML = "";
             }
             // タイマーを停止
             clearInterval(timer);
@@ -145,7 +147,8 @@
     <h1>troubleMeasure</h1>
     <p id="user_name"></p>
     <button onclick="start()" id="startButton">Start</button>
-    <p id="startMesseage"></p>
+    <button onclick="finish()" id="finishButton" disabled>Finish</button>
+    <p id="messeage"></p>
     <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
     <table border="1">
         <tr>
@@ -173,10 +176,10 @@
             </td>
         </tr>
     </table>
+    <input id="memo" value="" type="textfield" placeholder="Memo">
+    <br>
     <button onclick="submit()">送信</button>
     <p id="submitResult"></p>
-    <button onclick="finish()" id="finishButton">Finish</button>
-    <p id="finishMesseage"></p>
 </body>
 
 </html>

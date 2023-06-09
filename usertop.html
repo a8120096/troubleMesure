@@ -15,6 +15,9 @@
     <script>
         osql.requireLogin();
 
+        var me;
+        var studentid;
+
         $().ready(function () {
             getProfile();
             // メモ欄をクリア
@@ -22,9 +25,6 @@
             // プロットを初期表示
             updatePlot();
         })
-
-        var me;
-        var studentid;
 
         async function getProfile() {
             // プロフフィールの取得
@@ -168,6 +168,8 @@
         }
 
         async function updatePlot() {
+            me = await osql.getMe();
+            studentid = me.studentid;
             // プロットを更新する関数
             var sql = `select * from Troubles where studentid = "${studentid}";`;
             var objects = await osql.connect(sql);

@@ -24,8 +24,6 @@
             var sql = `insert ignore into Users (studentid, name) values("${studentid}", "${name}");`;
             var objects = await osql.connect(sql);
             console.log(objects);
-            sessionStorage.setItem('studentid', objects[0].studentid);
-            sessionStorage.setItem('name', objects[0].name);
             location.href = 'usertop.html';
         }
 

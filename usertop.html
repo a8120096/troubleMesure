@@ -9,30 +9,235 @@
     <script type="text/javascript" src="lib/osql.js"></script>
     <link rel="stylesheet" href="style.css">
 
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.jsのCDNを追加 -->
 
     <title>Top</title>
     <script>
         osql.requireLogin();
 
-        async function login() {
-            var me = await osql.getMe();
+        var me;
+        var studentid;
+
+        $().ready(function () {
+            getProfile();
+            // メモ欄をクリア
+            clearMemo();
+            // プロットを初期表示
+            updatePlot();
+        })
+
+        async function getProfile() {
+            // プロフフィールの取得
+            me = await osql.getMe();
+            studentid = me.studentid;
+            document.getElementById('user_name').innerHTML = `${me.fname} さん`;
             console.log(me);
-            var studentid = me.studentid;
-            console.log(`${studentid}`);
-            var name = me.fname;
-            console.log(name);
-            var sql = `insert ignore into Users (studentid, name) values("${studentid}", "${name}");`;
-            var objects = await osql.connect(sql);
-            console.log(objects);
-            location.href = 'usertop.html';
         }
 
+        var minutes = 0;
+        var seconds = 0;
+        var timer;
+        var showAlertInterval;
+        var state = '停止中';
+        var ontime = false;
+
+        function start() {
+            // startボタンが押されたとき
+            ontime = true;
+            if (ontime == true) {
+                // startButtonの無効化
+                var startButton = document.getElementById("startButton");
+                startButton.disabled = true;
+                document.getElementById("messeage").innerHTML = "開始しました";
+                // finishButtonの有効化
+                var finishButton = document.getElementById("finishButton");
+                finishButton.disabled = false;
+            }
+            // タイマーを開始
+            startTimer();
+            // 15分ごとにアラートを表示する
+            showAlertInterval = setInterval(function () {
+                showAlert();
+            }, 0.25 * 60 * 1000);
+        }
+
+        function startTimer() {
+            // 分数と秒数をリセット
+            minutes = 0;
+            seconds = 0;
+            // タイマーを開始
+            if (state == '停止中') {
+                timer = setInterval(updateTimer, 1000);
+                state = '動作中';
+            } else if (state == '動作中') {
+                clearInterval(timer);
+                state = '停止中';
+            }
+        }
+
+        function updateTimer() {
+            // タイマーの表示を更新する関数
+            seconds++;
+            if (seconds >= 60) {
+                seconds = 0;
+                minutes++;
+            }
+            document.getElementById('minutes').innerHTML = minutes;
+            document.getElementById('seconds').innerHTML = seconds;
+        }
+
+        function showAlert() {
+            // アラートの表示
+            alert('15 minutes have passed!');
+        }
+
+        function submit() {
+            // 送信ボタンが押されたとき
+            console.log('submit');
+            // トラブルレベルの値を取得
+            var selectedValue = getTroubleLevel();
+            var submittedMemo = getMemo();
+            // データベースに追加
+            insertTroubleLevel(selectedValue, submittedMemo);
+            // メモ欄をクリア
+            clearMemo();
+            // プロットを更新
+            updatePlot();
+        }
+
+        function getTroubleLevel() {
+            // 選択されたトラブルレベルを取得
+            var selectedValue = document.querySelector('input[name="trouble"]:checked').value;
+            return selectedValue;
+        }
+
+        function getMemo() {
+            // 入力されたメモを取得
+            var submittedMemo = document.getElementById("memo").value;
+            return submittedMemo;
+        }
+
+        function clearMemo() {
+            // メモ欄をクリア
+            document.getElementById('memo').value = "";
+        }
+
+        async function insertTroubleLevel(value, memo) {
+            console.log(memo);
+            // トラブルレベルをTroublesテーブルに追加
+            var sql = `insert into Troubles(studentid, trouble, createdat, memo) values("${studentid}", "${value}", now(), "${memo}");`;
+            var objects = await osql.connect(sql);
+            var selectSql = `select * from Troubles where studentid = "${studentid}" and createdat =  now();`;
+            var selectobjects = await osql.connect(selectSql);
+            console.log(selectobjects);
+            var selectCreatedatSql = `select createdat from Troubles where studentid = "${studentid}" and createdat =  now();`;
+            var nowTime = await osql.connect(selectCreatedatSql);
+            console.log(nowTime[0].createdat);
+            if (selectobjects) {
+                document.getElementById('submitResult').innerHTML = "送信されました(" + nowTime[0].createdat + ")";
+            }
+        }
+
+        function finish() {
+            // finishボタンが押されたとき
+            ontime = false;
+            if (ontime == false) {
+                // finishButtonの無効化
+                var finishButton = document.getElementById("finishButton");
+                finishButton.disabled = true;
+                document.getElementById("messeage").innerHTML = "終了しました";
+                // startButtonの有効化
+                var startButton = document.getElementById("startButton");
+                startButton.disabled = false;
+            }
+            // タイマーを停止
+            clearInterval(timer);
+            clearInterval(showAlertInterval);
+        }
+
+        function toggleTimerDisplay() {
+            // タイマーの表示・非表示の切り替え
+            var timerCheckbox = document.getElementById("timerCheckbox");
+            var timerElement = document.getElementById("time");
+
+            if (timerCheckbox.checked) {
+                timerElement.style.display = "block";
+            } else {
+                timerElement.style.display = "none";
+            }
+        }
+
+        async function updatePlot() {
+            me = await osql.getMe();
+            studentid = me.studentid;
+            // プロットを更新する関数
+            var sql = `select * from Troubles where studentid = "${studentid}";`;
+            var objects = await osql.connect(sql);
+            console.log(objects);
+
+            var data = [{
+                x: objects.map(obj => obj.createdat), // x軸にcreatedatを設定
+                y: objects.map(obj => obj.trouble), // y軸にtroubleを設定
+                type: 'scattergl', // プロットの種類を指定
+                mode: 'lines+markers', // ラインとマーカーの両方を表示
+                marker: { size: 8 }, // マーカーのサイズを指定
+                line: { shape: 'linear' } // ラインの種類を指定
+            }];
+
+            var layout = {
+                title: 'Trouble Level', // グラフのタイトルを設定
+                xaxis: { title: 'Time' }, // x軸のラベルを設定
+                yaxis: { title: 'Trouble Level' } // y軸のラベルを設定
+            };
+
+            Plotly.newPlot('plot', data, layout); // プロットを作成
+        }
     </script>
 </head>
 
 <body>
-    <h1>troubleMeasure</h1>
-    <button onclick="login()">ログイン</button>
+    <div class="container">
+        <h1>troubleMeasure</h1>
+        <p id="user_name"></p>
+        <button onclick="start()" id="startButton">Start</button>
+        <button onclick="finish()" id="finishButton" disabled>Finish</button>
+        <p id="messeage"></p>
+        <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>タイマーを表示
+        <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
+        <table>
+            <tr>
+                <td>
+                    <input type="radio" name="trouble" value=1>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=2>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=3>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=4>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=5>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">1</td>
+                <td align="center">2</td>
+                <td align="center">3</td>
+                <td align="center">4</td>
+                <td align="center">5</td>
+            </tr>
+        </table>
+        <div class="memo-container">
+            <input id="memo" value="" type="textfield" placeholder="Memo">
+        </div>
+        <br>
+        <button onclick="submit()">送信</button>
+        <p id="submitResult"></p>
+        <div id="plot"></div> <!-- プロットを表示する要素 -->
+    </div>
 </body>
 
 </html>

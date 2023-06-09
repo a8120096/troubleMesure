@@ -149,46 +149,63 @@
             clearInterval(timer);
             clearInterval(showAlertInterval);
         }
+
+        function toggleTimerDisplay() {
+            // タイマーの表示・非表示の切り替え
+            var timerCheckbox = document.getElementById("timerCheckbox");
+            var timerElement = document.getElementById("time");
+
+            if (timerCheckbox.checked) {
+                timerElement.style.display = "block";
+            } else {
+                timerElement.style.display = "none";
+            }
+        }
     </script>
 </head>
 
 <body>
-    <h1>troubleMeasure</h1>
-    <p id="user_name"></p>
-    <button onclick="start()" id="startButton">Start</button>
-    <button onclick="finish()" id="finishButton" disabled>Finish</button>
-    <p id="messeage"></p>
-    <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
-    <table border="1">
-        <tr>
-            <td align="center">1</td>
-            <td align="center">2</td>
-            <td align="center">3</td>
-            <td align="center">4</td>
-            <td align="center">5</td>
-        </tr>
-        <tr>
-            <td>
-                <input type="radio" name="trouble" value=1>
-            </td>
-            <td>
-                <input type="radio" name="trouble" value=2>
-            </td>
-            <td>
-                <input type="radio" name="trouble" value=3>
-            </td>
-            <td>
-                <input type="radio" name="trouble" value=4>
-            </td>
-            <td>
-                <input type="radio" name="trouble" value=5>
-            </td>
-        </tr>
-    </table>
-    <input id="memo" value="" type="textfield" placeholder="Memo">
-    <br>
-    <button onclick="submit()">送信</button>
-    <p id="submitResult"></p>
+    <div class="container">
+        <h1>troubleMeasure</h1>
+        <p id="user_name"></p>
+        <button onclick="start()" id="startButton">Start</button>
+        <button onclick="finish()" id="finishButton" disabled>Finish</button>
+        <p id="messeage"></p>
+        <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>タイマーを表示
+        <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
+        <table>
+            <tr>
+                <td>
+                    <input type="radio" name="trouble" value=1>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=2>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=3>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=4>
+                </td>
+                <td>
+                    <input type="radio" name="trouble" value=5>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">1</td>
+                <td align="center">2</td>
+                <td align="center">3</td>
+                <td align="center">4</td>
+                <td align="center">5</td>
+            </tr>
+        </table>
+        <div class="memo-container">
+            <input id="memo" value="" type="textfield" placeholder="Memo">
+        </div>
+        <br>
+        <button onclick="submit()">送信</button>
+        <p id="submitResult"></p>
+    </div>
 </body>
 
 </html>

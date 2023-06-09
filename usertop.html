@@ -14,14 +14,17 @@
     <script>
         osql.requireLogin();
 
+        $().ready(function () {
+            getProfile();
+            // メモ欄をクリア
+            clearMemo();
+        })
+
         var me;
         var studentid;
 
-        $().ready(function () {
-            getProfile();
-        })
-
         async function getProfile() {
+            // プロフフィールの取得
             me = await osql.getMe();
             studentid = me.studentid;
             document.getElementById('user_name').innerHTML = `${me.fname} さん`;
@@ -53,8 +56,6 @@
             showAlertInterval = setInterval(function () {
                 showAlert();
             }, 0.25 * 60 * 1000);
-            // タスクと状況をデータベースに追加
-            addTask();
         }
 
         function startTimer() {
@@ -92,8 +93,11 @@
             console.log('submit');
             // トラブルレベルの値を取得
             var selectedValue = getTroubleLevel();
+            var submittedMemo = getMemo();
             // データベースに追加
-            insertTroubleLevel(selectedValue);
+            insertTroubleLevel(selectedValue, submittedMemo);
+            // メモ欄をクリア
+            clearMemo();
         }
 
         function getTroubleLevel() {
@@ -102,9 +106,21 @@
             return selectedValue;
         }
 
-        async function insertTroubleLevel(value) {
+        function getMemo() {
+            // 入力されたメモを取得
+            var submittedMemo = document.getElementById("memo").value;
+            return submittedMemo;
+        }
+
+        function clearMemo() {
+            // メモ欄をクリア
+            document.getElementById('memo').value = "";
+        }
+
+        async function insertTroubleLevel(value, memo) {
+            console.log(memo);
             // トラブルレベルをTroublesテーブルに追加
-            var sql = `insert into Troubles(studentid, trouble, createdat) values("${studentid}", "${value}", now());`;
+            var sql = `insert into Troubles(studentid, trouble, createdat, memo) values("${studentid}", "${value}", now(), "${memo}");`;
             var objects = await osql.connect(sql);
             var selectSql = `select * from Troubles where studentid = "${studentid}" and createdat =  now();`;
             var selectobjects = await osql.connect(selectSql);
@@ -132,13 +148,6 @@
             // タイマーを停止
             clearInterval(timer);
             clearInterval(showAlertInterval);
-
-            // タスクと状況をデータベースに追加
-            addTask();
-        }
-
-        function addTask() {
-
         }
     </script>
 </head>

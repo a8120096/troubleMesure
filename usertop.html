@@ -24,18 +24,76 @@
         async function getProfile() {
             me = await osql.getMe();
             studentid = me.studentid;
-            document.getElementById('user_name').innerHTML = `ようこそ ${me.fname} さん`;
+            document.getElementById('user_name').innerHTML = `${me.fname} さん`;
             console.log(me);
         }
 
-        function submit() {
-            console.log('submit');
-            var selectedValue = getTroublelLevel();
-            insertTroubleLevel(selectedValue);
+        var minutes = 0;
+        var seconds = 0;
+        var timer;
+        var showAlertInterval;
+        var state = '停止中';
+        var ontime = false;
 
+        function start() {
+            // startボタンが押されたとき
+            ontime = true;
+            if (ontime == true) {
+                // startButtonの無効化
+                var startButton = document.getElementById("startButton");
+                startButton.disabled = true;
+                document.getElementById("startMesseage").innerHTML = "開始しました"
+            }
+            // タイマーを開始
+            startTimer();
+            // 15分ごとにアラートを表示する
+            showAlertInterval = setInterval(function () {
+                showAlert();
+            }, 0.25 * 60 * 1000);
+            // タスクと状況をデータベースに追加
+            addTask();
         }
 
-        function getTroublelLevel() {
+        function startTimer() {
+            // 分数と秒数をリセット
+            minutes = 0;
+            seconds = 0;
+            // タイマーを開始
+            if (state == '停止中') {
+                timer = setInterval(updateTimer, 1000);
+                state = '動作中';
+            } else if (state == '動作中') {
+                clearInterval(timer);
+                state = '停止中';
+            }
+        }
+
+        function updateTimer() {
+            // タイマーの表示を更新する関数
+            seconds++;
+            if (seconds >= 60) {
+                seconds = 0;
+                minutes++;
+            }
+            document.getElementById('minutes').innerHTML = minutes;
+            document.getElementById('seconds').innerHTML = seconds;
+        }
+
+        function showAlert() {
+            // アラートの表示
+            alert('15 minutes have passed!');
+        }
+
+        function submit() {
+            // 送信ボタンが押されたとき
+            console.log('submit');
+            // トラブルレベルの値を取得
+            var selectedValue = getTroubleLevel();
+            // データベースに追加
+            insertTroubleLevel(selectedValue);
+        }
+
+        function getTroubleLevel() {
             // 選択されたトラブルレベルを取得
             var selectedValue = document.querySelector('input[name="trouble"]:checked').value;
             return selectedValue;
@@ -45,6 +103,40 @@
             // トラブルレベルをTroublesテーブルに追加
             var sql = `insert into Troubles(studentid, trouble, createdat) values("${studentid}", "${value}", now());`;
             var objects = await osql.connect(sql);
+            var selectSql = `select * from Troubles where studentid = "${studentid}" and createdat =  now();`;
+            var selectobjects = await osql.connect(selectSql);
+            console.log(selectobjects);
+            var selectCreatedatSql = `select createdat from Troubles where studentid = "${studentid}" and createdat =  now();`;
+            var nowTime = await osql.connect(selectCreatedatSql);
+            console.log(nowTime[0].createdat);
+            if (selectobjects) {
+                document.getElementById('submitResult').innerHTML = "送信されました(" + nowTime[0].createdat + ")";
+            }
+        }
+
+        function finish() {
+            // finishボタンが押されたとき
+            ontime = false;
+            if (ontime == false) {
+                // finishButtonの無効化
+                var finishButton = document.getElementById("finishButton");
+                finishButton.disabled = true;
+                document.getElementById("finishMesseage").innerHTML = "終了しました";
+                // startButtonの有効化
+                var startButton = document.getElementById("startButton");
+                startButton.disabled = false;
+                document.getElementById("startMesseage").innerHTML = "";
+            }
+            // タイマーを停止
+            clearInterval(timer);
+            clearInterval(showAlertInterval);
+
+            // タスクと状況をデータベースに追加
+            addTask();
+        }
+
+        function addTask() {
+
         }
     </script>
 </head>
@@ -52,14 +144,39 @@
 <body>
     <h1>troubleMeasure</h1>
     <p id="user_name"></p>
-    <input type="radio" name="trouble" value=1>
-    <input type="radio" name="trouble" value=2>
-    <input type="radio" name="trouble" value=3>
-    <input type="radio" name="trouble" value=4>
-    <input type="radio" name="trouble" value=5>
-    <br>
+    <button onclick="start()" id="startButton">Start</button>
+    <p id="startMesseage"></p>
+    <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
+    <table border="1">
+        <tr>
+            <td align="center">1</td>
+            <td align="center">2</td>
+            <td align="center">3</td>
+            <td align="center">4</td>
+            <td align="center">5</td>
+        </tr>
+        <tr>
+            <td>
+                <input type="radio" name="trouble" value=1>
+            </td>
+            <td>
+                <input type="radio" name="trouble" value=2>
+            </td>
+            <td>
+                <input type="radio" name="trouble" value=3>
+            </td>
+            <td>
+                <input type="radio" name="trouble" value=4>
+            </td>
+            <td>
+                <input type="radio" name="trouble" value=5>
+            </td>
+        </tr>
+    </table>
     <button onclick="submit()">送信</button>
-
+    <p id="submitResult"></p>
+    <button onclick="finish()" id="finishButton">Finish</button>
+    <p id="finishMesseage"></p>
 </body>
 
 </html>

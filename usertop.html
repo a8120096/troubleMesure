@@ -40,6 +40,7 @@
         var showAlertInterval;
         var state = '停止中';
         var ontime = false;
+        var soundEnabled = true;
 
         function start() {
             // startボタンが押されたとき
@@ -89,6 +90,18 @@
         function showAlert() {
             // アラートの表示
             alert('15分経過しました! 悩み度を送信してください!');
+
+            // サウンドを再生する
+            if (soundEnabled) {
+                var audio = new Audio('sound.mp3');
+                audio.play();
+            }
+        }
+
+        function toggleSound() {
+            // サウンドのオン/オフの切り替え
+            var soundToggle = document.getElementById("soundToggle");
+            soundEnabled = soundToggle.checked;
         }
 
         function submit() {
@@ -156,7 +169,7 @@
         }
 
         function toggleTimerDisplay() {
-            // タイマーの表示・非表示の切り替え
+            // タイマーの表示/非表示の切り替え
             var timerCheckbox = document.getElementById("timerCheckbox");
             var timerElement = document.getElementById("time");
 
@@ -202,7 +215,10 @@
         <button onclick="start()" id="startButton">Start</button>
         <button onclick="finish()" id="finishButton" disabled>Finish</button>
         <p id="messeage"></p>
-        <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>タイマーを表示
+        <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>
+        <label>タイマー表示/非表示</label>
+        <input type="checkbox" id="soundToggle" onchange="toggleSound()" checked>
+        <label for="soundToggle">サウンドオン/オフ</label>
         <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
         <table>
             <tr>

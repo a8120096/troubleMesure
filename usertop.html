@@ -20,10 +20,9 @@
 
         $().ready(function () {
             getProfile();
-            // メモ欄をクリア
-            clearMemo();
-            // プロットを初期表示
-            updatePlot();
+            clearMemo();  // メモ欄をクリア
+            updatePlot();  // プロットを初期表示
+            updareTable();  // 表を表示
         })
 
         async function getProfile() {
@@ -49,7 +48,11 @@
                 // startButtonの無効化
                 var startButton = document.getElementById("startButton");
                 startButton.disabled = true;
-                document.getElementById("messeage").innerHTML = "開始しました";
+                // startメッセージの表示
+                var startTime = new Date();
+                var startTimeMessage = "開始しました (" + getFormattedDateTime(startTime) + ")";
+                document.getElementById("message").innerHTML = startTimeMessage;
+                // document.getElementById("messeage").innerHTML = "開始しました";
                 // finishButtonの有効化
                 var finishButton = document.getElementById("finishButton");
                 finishButton.disabled = false;
@@ -60,6 +63,58 @@
             showAlertInterval = setInterval(function () {
                 showAlert();
             }, 15 * 60 * 1000);
+        }
+
+        function finish() {
+            // finishボタンが押されたとき
+            ontime = false;
+            if (ontime == false) {
+                // finishButtonの無効化
+                var finishButton = document.getElementById("finishButton");
+                finishButton.disabled = true;
+                // finishメッセージの表示
+                var finishTime = new Date();
+                var finishTimeMessage = "終了しました (" + getFormattedDateTime(finishTime) + ")";
+                document.getElementById("message").innerHTML = finishTimeMessage;
+                // startButtonの有効化
+                var startButton = document.getElementById("startButton");
+                startButton.disabled = false;
+            }
+            // タイマーを停止
+            clearInterval(timer);
+            clearInterval(showAlertInterval);
+        }
+
+        function getFormattedDateTime(date) {
+            var year = date.getFullYear();
+            var month = addLeadingZero(date.getMonth() + 1);
+            var day = addLeadingZero(date.getDate());
+            var hours = addLeadingZero(date.getHours());
+            var minutes = addLeadingZero(date.getMinutes());
+            var seconds = addLeadingZero(date.getSeconds());
+            return year + "-" + month + "-" + day + " " + hours + ":" + minutes + ":" + seconds;
+        }
+
+        function addLeadingZero(number) {
+            return number < 10 ? "0" + number : number;
+        }
+
+        function toggleTimerDisplay() {
+            // タイマーの表示/非表示の切り替え
+            var timerCheckbox = document.getElementById("timerCheckbox");
+            var timerElement = document.getElementById("time");
+
+            if (timerCheckbox.checked) {
+                timerElement.style.display = "block";
+            } else {
+                timerElement.style.display = "none";
+            }
+        }
+
+        function toggleSound() {
+            // サウンドのオン/オフの切り替え
+            var soundToggle = document.getElementById("soundToggle");
+            soundEnabled = soundToggle.checked;
         }
 
         function startTimer() {
@@ -83,8 +138,8 @@
                 seconds = 0;
                 minutes++;
             }
-            document.getElementById('minutes').innerHTML = minutes;
-            document.getElementById('seconds').innerHTML = seconds;
+            document.getElementById('minutes').innerHTML = addLeadingZero(minutes);
+            document.getElementById('seconds').innerHTML = addLeadingZero(seconds);
         }
 
         function showAlert() {
@@ -98,30 +153,37 @@
             }
         }
 
-        function toggleSound() {
-            // サウンドのオン/オフの切り替え
-            var soundToggle = document.getElementById("soundToggle");
-            soundEnabled = soundToggle.checked;
-        }
-
         function submit() {
             // 送信ボタンが押されたとき
-            console.log('submit');
-            // トラブルレベルの値を取得
-            var selectedValue = getTroubleLevel();
+            var selectedValue = getTroubleLevel();  // トラブルレベルの値を取得
             var submittedMemo = getMemo();
-            // データベースに追加
-            insertTroubleLevel(selectedValue, submittedMemo);
-            // メモ欄をクリア
-            clearMemo();
-            // プロットを更新
-            updatePlot();
+
+            // 選択されていないときにメッセージの表示
+            var submitTime = new Date();
+            if (!selectedValue) {
+                var reselectMessage = "値を選択して送信してください (" + getFormattedDateTime(submitTime) + ")";
+                document.getElementById("submitResult").innerHTML = reselectMessage;
+                document.getElementById("submitResult").style.color = 'red'; // 赤色に設定
+                return;
+            }
+
+            insertTroubleLevel(selectedValue, submittedMemo);  // データベースに追加
+            clearMemo();  // メモ欄をクリア
+            updatePlot();  // プロットを更新
+            updareTable();  // 表を更新
+
+            var submitResultMessage = "送信されました (" + getFormattedDateTime(submitTime) + ")";
+            document.getElementById("submitResult").innerHTML = submitResultMessage;
+            document.getElementById("submitResult").style.color = 'black'; // 黒色に設定
         }
 
         function getTroubleLevel() {
             // 選択されたトラブルレベルを取得
-            var selectedValue = document.querySelector('input[name="trouble"]:checked').value;
-            return selectedValue;
+            var selectedRadio = document.querySelector('input[name="trouble"]:checked');
+            if (selectedRadio) {
+                return selectedRadio.value;
+            }
+            return null; // 選択された値がない場合は null を返す
         }
 
         function getMemo() {
@@ -142,42 +204,6 @@
             var objects = await osql.connect(sql);
             var selectSql = `select * from Troubles where studentid = "${studentid}" and createdat =  now();`;
             var selectobjects = await osql.connect(selectSql);
-            console.log(selectobjects);
-            var selectCreatedatSql = `select createdat from Troubles where studentid = "${studentid}" and createdat =  now();`;
-            var nowTime = await osql.connect(selectCreatedatSql);
-            console.log(nowTime[0].createdat);
-            if (selectobjects) {
-                document.getElementById('submitResult').innerHTML = "送信されました(" + nowTime[0].createdat + ")";
-            }
-        }
-
-        function finish() {
-            // finishボタンが押されたとき
-            ontime = false;
-            if (ontime == false) {
-                // finishButtonの無効化
-                var finishButton = document.getElementById("finishButton");
-                finishButton.disabled = true;
-                document.getElementById("messeage").innerHTML = "終了しました";
-                // startButtonの有効化
-                var startButton = document.getElementById("startButton");
-                startButton.disabled = false;
-            }
-            // タイマーを停止
-            clearInterval(timer);
-            clearInterval(showAlertInterval);
-        }
-
-        function toggleTimerDisplay() {
-            // タイマーの表示/非表示の切り替え
-            var timerCheckbox = document.getElementById("timerCheckbox");
-            var timerElement = document.getElementById("time");
-
-            if (timerCheckbox.checked) {
-                timerElement.style.display = "block";
-            } else {
-                timerElement.style.display = "none";
-            }
         }
 
         async function updatePlot() {
@@ -186,7 +212,6 @@
             // プロットを更新する関数
             var sql = `select * from Troubles where studentid = "${studentid}";`;
             var objects = await osql.connect(sql);
-            console.log(objects);
 
             var data = [{
                 x: objects.map(obj => obj.createdat), // x軸にcreatedatを設定
@@ -198,12 +223,39 @@
             }];
 
             var layout = {
-                title: 'Trouble Level', // グラフのタイトルを設定
-                xaxis: { title: 'Time' }, // x軸のラベルを設定
-                yaxis: { title: 'Trouble Level' } // y軸のラベルを設定
+                xaxis: { title: '時間' }, // x軸のラベルを設定
+                yaxis: { title: '悩み度' } // y軸のラベルを設定
             };
 
             Plotly.newPlot('plot', data, layout); // プロットを作成
+        }
+
+        async function updareTable() {
+            me = await osql.getMe();
+            studentid = me.studentid;
+            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;;`;
+            var objects = await osql.connect(sql);
+
+            var html = '';
+            html = html + '<table border="1">';
+            html = html + '<tr>';
+            html = html + '<th>悩み度</th>';
+            html = html + '<th>時間</th>';
+            html = html + '<th>メモ</th>';
+            html = html + '</tr>';
+
+            for (var i = 0; i < objects.length; i++) {
+                var object = objects[i];
+
+                html = html + '<tr>';
+                html = html + '<td>' + object.trouble + '</td>';
+                html = html + '<td>' + object.createdat + '</td>';
+                html = html + '<td>' + object.memo + '</td>';
+                html = html + '</tr>';
+            }
+
+            html = html + '</table>';
+            document.getElementById('table').innerHTML = html;
         }
     </script>
 </head>
@@ -214,12 +266,11 @@
         <p id="user_name"></p>
         <button onclick="start()" id="startButton">Start</button>
         <button onclick="finish()" id="finishButton" disabled>Finish</button>
-        <p id="messeage"></p>
-        <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>
+        <p id="message"></p> <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>
         <label>タイマー表示/非表示</label>
         <input type="checkbox" id="soundToggle" onchange="toggleSound()" checked>
         <label for="soundToggle">サウンドオン/オフ</label>
-        <p id="time"><span id="minutes">0</span>:<span id="seconds">0</span></p>
+        <p id="time"><span id="minutes">00</span>:<span id="seconds">00</span></p>
         <table>
             <tr>
                 <td>
@@ -252,7 +303,8 @@
         <br>
         <button onclick="submit()">送信</button>
         <p id="submitResult"></p>
-        <div id="plot"></div> <!-- プロットを表示する要素 -->
+        <div id="plot"></div> <!-- プロットを表示 -->
+        <div id="table"></div> <!-- 表を表示 -->
     </div>
 </body>
 

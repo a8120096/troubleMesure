@@ -38,46 +38,39 @@
         var timer;
         var showAlertInterval;
         var state = '停止中';
-        var ontime = false;
         var soundEnabled = true;
 
         function start() {
             // startボタンが押されたとき
-            ontime = true;
-            if (ontime == true) {
-                // startButtonの無効化
-                var startButton = document.getElementById("startButton");
-                startButton.disabled = true;
-                // startメッセージの表示
-                var startTime = new Date();
-                var startTimeMessage = "開始しました (" + getFormattedDateTime(startTime) + ")";
-                document.getElementById("message").innerHTML = startTimeMessage;
-                // stopButtonの有効化
-                var stopButton = document.getElementById("stopButton");
-                stopButton.disabled = false;
-            }
+            // startButtonの無効化
+            var startButton = document.getElementById("startButton");
+            startButton.disabled = true;
+            // startメッセージの表示
+            var startTime = new Date();
+            var startTimeMessage = "開始しました (" + getFormattedDateTime(startTime) + ")";
+            document.getElementById("message").innerHTML = startTimeMessage;
+            // stopButtonの有効化
+            var stopButton = document.getElementById("stopButton");
+            stopButton.disabled = false;
             startTimer();  // タイマーを開始
             // 15分ごとにアラート表示
             showAlertInterval = setInterval(function () {
                 showAlert();
-            }, 15 * 60 * 1000);
+            }, 0.25 * 60 * 1000);
         }
 
         function stop() {
             // stopボタンが押されたとき
-            ontime = false;
-            if (ontime == false) {
-                // stopButtonの無効化
-                var stopButton = document.getElementById("stopButton");
-                stopButton.disabled = true;
-                // stopメッセージの表示
-                var stopTime = new Date();
-                var stopTimeMessage = "終了しました (" + getFormattedDateTime(stopTime) + ")";
-                document.getElementById("message").innerHTML = stopTimeMessage;
-                // startButtonの有効化
-                var startButton = document.getElementById("startButton");
-                startButton.disabled = false;
-            }
+            // stopButtonの無効化
+            var stopButton = document.getElementById("stopButton");
+            stopButton.disabled = true;
+            // stopメッセージの表示
+            var stopTime = new Date();
+            var stopTimeMessage = "終了しました (" + getFormattedDateTime(stopTime) + ")";
+            document.getElementById("message").innerHTML = stopTimeMessage;
+            // startButtonの有効化
+            var startButton = document.getElementById("startButton");
+            startButton.disabled = false;
             stopTimer();
         }
 
@@ -121,9 +114,6 @@
             if (state == '停止中') {
                 timer = setInterval(updateTimer, 1000);
                 state = '動作中';
-            } else if (state == '動作中') {
-                clearInterval(timer);
-                state = '停止中';
             }
         }
 
@@ -212,7 +202,6 @@
         }
 
         async function insertTroubleLevel(value, memo) {
-            console.log(memo);
             // トラブルレベルをTroublesテーブルに追加
             var sql = `insert into Troubles(studentid, trouble, createdat, memo) values("${studentid}", "${value}", now(), "${memo}");`;
             var objects = await osql.connect(sql);

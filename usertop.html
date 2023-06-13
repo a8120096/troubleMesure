@@ -22,7 +22,7 @@
             getProfile();
             clearMemo();  // メモ欄をクリア
             updatePlot();  // プロットを初期表示
-            updareTable();  // 表を表示
+            updateTable();  // 表を表示
         })
 
         async function getProfile() {
@@ -52,37 +52,33 @@
                 var startTime = new Date();
                 var startTimeMessage = "開始しました (" + getFormattedDateTime(startTime) + ")";
                 document.getElementById("message").innerHTML = startTimeMessage;
-                // document.getElementById("messeage").innerHTML = "開始しました";
-                // finishButtonの有効化
-                var finishButton = document.getElementById("finishButton");
-                finishButton.disabled = false;
+                // stopButtonの有効化
+                var stopButton = document.getElementById("stopButton");
+                stopButton.disabled = false;
             }
-            // タイマーを開始
-            startTimer();
-            // 15分ごとにアラートを表示する
+            startTimer();  // タイマーを開始
+            // 15分ごとにアラート表示
             showAlertInterval = setInterval(function () {
                 showAlert();
             }, 15 * 60 * 1000);
         }
 
-        function finish() {
-            // finishボタンが押されたとき
+        function stop() {
+            // stopボタンが押されたとき
             ontime = false;
             if (ontime == false) {
-                // finishButtonの無効化
-                var finishButton = document.getElementById("finishButton");
-                finishButton.disabled = true;
-                // finishメッセージの表示
-                var finishTime = new Date();
-                var finishTimeMessage = "終了しました (" + getFormattedDateTime(finishTime) + ")";
-                document.getElementById("message").innerHTML = finishTimeMessage;
+                // stopButtonの無効化
+                var stopButton = document.getElementById("stopButton");
+                stopButton.disabled = true;
+                // stopメッセージの表示
+                var stopTime = new Date();
+                var stopTimeMessage = "終了しました (" + getFormattedDateTime(stopTime) + ")";
+                document.getElementById("message").innerHTML = stopTimeMessage;
                 // startButtonの有効化
                 var startButton = document.getElementById("startButton");
                 startButton.disabled = false;
             }
-            // タイマーを停止
-            clearInterval(timer);
-            clearInterval(showAlertInterval);
+            stopTimer();
         }
 
         function getFormattedDateTime(date) {
@@ -131,6 +127,19 @@
             }
         }
 
+        function stopTimer() {
+            // タイマーを停止
+            if (state == '動作中') {
+                clearInterval(timer);
+                clearInterval(showAlertInterval);
+                state = '停止中';
+                // 分数と秒数をリセット
+                minutes = 0;
+                seconds = 0;
+                updateTimerDisplay();
+            }
+        }
+
         function updateTimer() {
             // タイマーの表示を更新する関数
             seconds++;
@@ -138,19 +147,24 @@
                 seconds = 0;
                 minutes++;
             }
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
             document.getElementById('minutes').innerHTML = addLeadingZero(minutes);
             document.getElementById('seconds').innerHTML = addLeadingZero(seconds);
         }
 
         function showAlert() {
-            // アラートの表示
-            alert('15分経過しました! 悩み度を送信してください!');
-
             // サウンドを再生する
             if (soundEnabled) {
                 var audio = new Audio('sound.mp3');
                 audio.play();
             }
+            // アラートの表示
+            setTimeout(function () {
+                alert('15分経過しました! 悩み度を送信してください!');
+            }, 500); // サウンド再生のための遅延（500ミリ秒）
         }
 
         function submit() {
@@ -170,7 +184,7 @@
             insertTroubleLevel(selectedValue, submittedMemo);  // データベースに追加
             clearMemo();  // メモ欄をクリア
             updatePlot();  // プロットを更新
-            updareTable();  // 表を更新
+            updateTable();  // 表を更新
 
             var submitResultMessage = "送信されました (" + getFormattedDateTime(submitTime) + ")";
             document.getElementById("submitResult").innerHTML = submitResultMessage;
@@ -230,7 +244,7 @@
             Plotly.newPlot('plot', data, layout); // プロットを作成
         }
 
-        async function updareTable() {
+        async function updateTable() {
             me = await osql.getMe();
             studentid = me.studentid;
             var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;;`;
@@ -262,14 +276,14 @@
 
 <body>
     <div class="container">
-        <h1>troubleMeasurement</h1>
+        <h1>悩み度測定</h1>
         <p id="user_name"></p>
         <button onclick="start()" id="startButton">Start</button>
-        <button onclick="finish()" id="finishButton" disabled>Finish</button>
+        <button onclick="stop()" id="stopButton" disabled>Stop</button>
         <p id="message"></p> <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>
-        <label>タイマー表示/非表示</label>
+        <label>経過時間 表示/非表示</label>
         <input type="checkbox" id="soundToggle" onchange="toggleSound()" checked>
-        <label for="soundToggle">サウンドオン/オフ</label>
+        <label for="soundToggle">サウンド オン/オフ</label>
         <p id="time"><span id="minutes">00</span>:<span id="seconds">00</span></p>
         <table>
             <tr>

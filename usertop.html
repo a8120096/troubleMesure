@@ -56,7 +56,7 @@
             // 15分ごとにアラート表示
             showAlertInterval = setInterval(function () {
                 showAlert();
-            }, 15 * 60 * 1000);
+            }, 1 * 60 * 1000);
         }
 
         function stop() {
@@ -260,6 +260,10 @@
             html = html + '</table>';
             document.getElementById('table').innerHTML = html;
         }
+
+        function logout() {
+            osql.logout();
+        }
     </script>
 </head>
 
@@ -306,6 +310,9 @@
         <br>
         <button onclick="submit()">送信</button>
         <p id="submitResult"></p>
+        <hr>
+        <a href="text-part1/instruction.html" target="_blank">説明ページ</a>
+        <button onclick="logout()" id="startButton">Logout</button>
         <div id="plot"></div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>

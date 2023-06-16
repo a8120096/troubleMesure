@@ -15,19 +15,19 @@ h1 {
     margin-bottom: 20px;
 }
 
-button {
-    font-size: 18px;
-    padding: 10px 20px;
-    margin-top: 10px;
-    margin-bottom: 20px;
-}
-
 table {
     margin: 20px auto;
 }
 
 td {
     padding: 5px;
+}
+
+.bigButton {
+    font-size: 18px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 #time {

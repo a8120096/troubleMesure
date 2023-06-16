@@ -131,7 +131,7 @@
         }
 
         function updateTimer() {
-            // タイマーの表示を更新する関数
+            // タイマーの表示を更新
             seconds++;
             if (seconds >= 60) {
                 seconds = 0;
@@ -146,7 +146,7 @@
         }
 
         function showAlert() {
-            // サウンドを再生する
+            // サウンドを再生
             if (soundEnabled) {
                 var audio = new Audio('sound.mp3');
                 audio.play();
@@ -210,9 +210,9 @@
         }
 
         async function updatePlot() {
+            // プロットを更新
             me = await osql.getMe();
             studentid = me.studentid;
-            // プロットを更新する関数
             var sql = `select * from Troubles where studentid = "${studentid}";`;
             var objects = await osql.connect(sql);
 
@@ -234,6 +234,7 @@
         }
 
         async function updateTable() {
+            // 表を更新
             me = await osql.getMe();
             studentid = me.studentid;
             var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;;`;
@@ -271,8 +272,8 @@
     <div class="container">
         <h1>悩み度測定</h1>
         <p id="user_name"></p>
-        <button onclick="start()" id="startButton">Start</button>
-        <button onclick="stop()" id="stopButton" disabled>Stop</button>
+        <button onclick="start()" id="startButton" class="bigButton">Start</button>
+        <button onclick="stop()" id="stopButton" class="bigButton" disabled>Stop</button>
         <p id="message"></p> <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>
         <label>経過時間 表示/非表示</label>
         <input type="checkbox" id="soundToggle" onchange="toggleSound()" checked>
@@ -308,11 +309,11 @@
             <input id="memo" value="" type="textfield" placeholder="Memo">
         </div>
         <br>
-        <button onclick="submit()">送信</button>
+        <button onclick="submit()" id="submitButton" class="bigButton">送信</button>
         <p id="submitResult"></p>
         <hr>
         <a href="instruction.html" target="_blank">説明ページ</a>
-        <button onclick="logout()" id="startButton">Logout</button>
+        <button onclick="logout()" id="logoutButton">Logout</button>
         <div id="plot"></div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>

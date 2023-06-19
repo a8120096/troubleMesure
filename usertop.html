@@ -213,24 +213,31 @@
             // プロットを更新
             me = await osql.getMe();
             studentid = me.studentid;
-            var sql = `select * from Troubles where studentid = "${studentid}";`;
+            // バージョン情報を取得
+            var sql = `SELECT * FROM Troubles WHERE studentid = "${studentid}";`;
             var objects = await osql.connect(sql);
+            console.log(objects);
 
+            // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
-                x: objects.map(obj => obj.createdat), // x軸にcreatedatを設定
-                y: objects.map(obj => obj.trouble), // y軸にtroubleを設定
-                type: 'scattergl', // プロットの種類を指定
-                mode: 'lines+markers', // ラインとマーカーの両方を表示
-                marker: { size: 8 }, // マーカーのサイズを指定
-                line: { shape: 'linear' } // ラインの種類を指定
+                x: objects.map((obj, index) => index + 1),
+                y: objects.map(obj => obj.trouble),
+                type: 'bar',
+                hovertemplate: '%{text.trouble}<br>%{text.createdat}',  // カーソルを当てたときの表示テンプレート
+                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat }))  // 表示するテキストデータ
             }];
 
             var layout = {
-                xaxis: { title: '時間' }, // x軸のラベルを設定
-                yaxis: { title: '悩み度' } // y軸のラベルを設定
+                xaxis: {
+                    title: 'バージョン',
+                },
+                yaxis: {
+                    title: '悩み度',
+                    range: [1, 5]  // y軸の範囲を1から5に固定
+                },
             };
 
-            Plotly.newPlot('plot', data, layout); // プロットを作成
+            Plotly.newPlot('plot', data, layout);
         }
 
         async function updateTable() {

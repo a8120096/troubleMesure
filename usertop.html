@@ -20,6 +20,7 @@
 
         $().ready(function () {
             getProfile();
+            Notification.requestPermission();
             clearMemo();  // メモ欄をクリア
             updatePlot();  // プロットを初期表示
             updateTable();  // 表を表示
@@ -152,9 +153,7 @@
                 audio.play();
             }
             // アラートの表示
-            setTimeout(function () {
-                alert('15分経過しました! 悩み度を送信してください!');
-            }, 500); // サウンド再生のための遅延（500ミリ秒）
+            new Notification("15分経過しました!悩み度を送信してください!");
         }
 
         function submit() {

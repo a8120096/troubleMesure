@@ -20,7 +20,7 @@
 
         $().ready(function () {
             getProfile();
-            Notification.requestPermission();
+            Notification.requestPermission(); // 通知の許可をリクエスト
             clearMemo();  // メモ欄をクリア
             updatePlot();  // プロットを初期表示
             updateTable();  // 表を表示
@@ -37,7 +37,7 @@
         var minutes = 0;
         var seconds = 0;
         var timer;
-        var showAlertInterval;
+        var sendNotificationInterval;
         var state = '停止中';
         var soundEnabled = true;
 
@@ -55,8 +55,8 @@
             stopButton.disabled = false;
             startTimer();  // タイマーを開始
             // 15分ごとにアラート表示
-            showAlertInterval = setInterval(function () {
-                showAlert();
+            sendNotificationInterval = setInterval(function () {
+                sendNotification();
             }, 15 * 60 * 1000);
         }
 
@@ -122,7 +122,7 @@
             // タイマーを停止
             if (state == '動作中') {
                 clearInterval(timer);
-                clearInterval(showAlertInterval);
+                clearInterval(sendNotificationInterval);
                 state = '停止中';
                 // 分数と秒数をリセット
                 minutes = 0;
@@ -146,13 +146,13 @@
             document.getElementById('seconds').innerHTML = addLeadingZero(seconds);
         }
 
-        function showAlert() {
+        function sendNotification() {
             // サウンドを再生
             if (soundEnabled) {
                 var audio = new Audio('sound.mp3');
                 audio.play();
             }
-            // アラートの表示
+            // 通知
             new Notification("15分経過しました!悩み度を送信してください!");
         }
 

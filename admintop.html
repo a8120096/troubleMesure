@@ -11,12 +11,11 @@
 
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.jsのCDNを追加 -->
 
-    <title>AdminTop</title>
+    <title>AdminTop2</title>
     <script>
         osql.requireLogin();
 
         var me;
-        var studentid;
 
         $().ready(function () {
             getProfile();
@@ -26,8 +25,6 @@
         async function getProfile() {
             // プロフフィールの取得
             me = await osql.getMe();
-            studentid = me.studentid;
-            console.log(me);
         }
 
         async function getUsers() {
@@ -53,7 +50,7 @@
             var sql = `select * from Users where studentid = "${studentid}";`;
             var objects = await osql.connect(sql);
             var name = objects[0].name;
-            document.getElementById('name').innerHTML = `${name} さんのデータ`;
+            document.getElementById('name').innerHTML = `${name} さん`;
             updatePlot(studentid);
             updateTable(studentid);
         }
@@ -130,11 +127,20 @@
 
 <body>
     <div class="container">
-        <h1>悩み度測定記録</h1>
+        <table width="100%">
+            <tr>
+                <td>
+                    <h1>悩み度測定記録 </h1>
+                </td>
+                <td align="right"><a href="javascript:logout()">ログアウト</a></td>
+            </tr>
+        </table>
+        <hr>
         <p>学生一覧</p>
         <div id="users"></div> <!-- 学生一覧を表示 -->
+        <hr>
         <h4 id="name"></h4>
-        <div id="plot" class="plot"></div> <!-- プロットを表示 -->
+        <div class="plotArea"><div id="plot"></div></div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>
 </body>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/osql.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.jsのCDNを追加 -->
+
+    <title>AdminTop</title>
+    <script>
+        osql.requireLogin();
+
+        var me;
+        var studentid;
+        var selectedStudents;
+
+        $().ready(function () {
+            getProfile();
+            getUsers();
+            selectedStudents = [];
+        })
+
+        async function getProfile() {
+            // プロフフィールの取得
+            me = await osql.getMe();
+            studentid = me.studentid;
+            console.log(me);
+        }
+
+        async function getUsers() {
+            // User一覧を取得
+            var sql = 'select * from Users';
+            var users = await osql.connect(sql);
+
+            var html = '';
+            html = html + '<table border="1">';
+            for (var i = 0; i < users.length; i++) {
+                html = html + '<tr>';
+                var user = users[i];
+                html = html + '<td>' + user.studentid + '</td>';
+                html = html + '<td>' + user.name + '</td>';
+                html = html + `<td><input type="checkbox" onchange="updateSelectedStudents('${user.studentid}', this)"></td>`;
+                html = html + '</tr>';
+            }
+            html = html + '</table>';
+            html = html + '<button onclick="displaySelectedStudent()" class="bigButton">選択した生徒を表示</button>';
+            document.getElementById('users').innerHTML = html;
+        }
+
+        function updateSelectedStudents(studentId, checkbox) {
+            // チェックボックスのチェック状態に応じてselectedStudentsを更新
+            if (checkbox.checked) {
+                // チェックされた時は配列に追加
+                console.log("checked:" + studentId);
+                selectedStudents.push(studentId);
+            } else {
+                selectedStudents
+                // チェックが外された時は配列から削除
+                console.log("unchecked:" + studentId);
+                var index = selectedStudents.indexOf(studentId);
+                if (index != -1) {
+                    selectedStudents.splice(index, 1);
+                }
+            }
+        }
+
+        function displaySelectedStudent() {
+            console.log(selectedStudents);
+            // 選択された生徒のデータを表示
+            for (var i = 0; i < selectedStudents.length; i++) {
+                var studentId = selectedStudents[i];
+            }
+        }
+
+        async function updatePlot(studentid) {
+            // プロットを更新
+            var sql = `select * from Troubles where studentid = "${studentid}";`;
+            var objects = await osql.connect(sql);
+
+            // バージョンをx軸、悩み度をy軸としてデータを作成
+            var data = [{
+                x: objects.map((obj, index) => index + 1),
+                y: objects.map(obj => obj.trouble),
+                type: 'bar',
+                hovertemplate: '%{text.trouble}<br>%{text.createdat}',  // カーソルを当てたときの表示テンプレート
+                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat }))  // 表示するテキストデータ
+            }];
+
+            var layout = {
+                xaxis: {
+                    title: 'バージョン',
+                },
+                yaxis: {
+                    title: '悩み度',
+                    range: [1, 5]  // y軸の範囲を1から5に固定
+                },
+            };
+
+            Plotly.newPlot('plot', data, layout);
+        }
+
+        async function updateTable(studentid) {
+            // 表を更新
+            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;;`;
+            var objects = await osql.connect(sql);
+
+            var html = '';
+            html = html + '<table border="1">';
+            html = html + '<tr>';
+            html = html + '<th>悩み度</th>';
+            html = html + '<th>時間</th>';
+            html = html + '<th>メモ</th>';
+            html = html + '</tr>';
+
+            for (var i = 0; i < objects.length; i++) {
+                var object = objects[i];
+
+                html = html + '<tr>';
+                html = html + '<td>' + object.trouble + '</td>';
+                html = html + '<td>' + object.createdat + '</td>';
+                html = html + '<td>' + object.memo + '</td>';
+                html = html + '</tr>';
+            }
+
+            html = html + '</table>';
+            document.getElementById('table').innerHTML = html;
+        }
+
+        function logout() {
+            osql.logout();
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>悩み度測定記録</h1>
+        <p>学生一覧</p>
+        <div id="users"></div> <!-- プロットを表示 -->
+        <p id="name"></p>
+        <div id="plot"></div> <!-- プロットを表示 -->
+        <div id="table"></div> <!-- 表を表示 -->
+    </div>
+</body>
+
+</html>

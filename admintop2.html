@@ -29,7 +29,6 @@
             // プロフフィールの取得
             me = await osql.getMe();
             studentid = me.studentid;
-            console.log(me);
         }
 
         async function getUsers() {
@@ -48,7 +47,7 @@
                 html = html + '</tr>';
             }
             html = html + '</table>';
-            html = html + '<button onclick="allCheck()" id="allCheckButton">全員を選択</button><br><button onclick="displaySelectedStudent()" class="bigButton">選択した生徒を表示</button>';
+            html = html + '<button onclick="allCheck()" id="allCheckButton">全員を選択</button>';
             document.getElementById('users').innerHTML = html;
         }
 
@@ -92,8 +91,8 @@
 
                 // htmlを用意
                 Shtml = '<div class="cardContent"><div id="' + selectedStudentid + '" class="box">';
-                htmlName = `<h4>${name} さん</h4>`;
-                htmlPlot = '<div id="' + selectedStudentid + 'Plot" class="plot"></div>';
+                htmlName = `<h4><a href="detail.html?studentid=` + selectedStudentid + `" target="_blank">${name}</a> さん</h4>`;
+                htmlPlot = '<div class="plotArea"><div id="' + selectedStudentid + 'Plot"></div></div>';
                 htmlLastTime = '<div id="' + selectedStudentid + 'LastTime"></div>';
                 htmlLastMemo = '<div id="' + selectedStudentid + 'LastMemo"></div>';
                 Ehtml = '</div></div>';
@@ -101,7 +100,7 @@
                 document.getElementById('plots').innerHTML += html;
 
                 // 最後の時間を取得
-                var timeSql = `select createdat from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;;`;
+                var timeSql = `select createdat from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;`;
                 var timeObjects = await osql.connect(timeSql);
                 var lastTime = timeObjects[0].createdat;
 
@@ -187,10 +186,20 @@
 
 <body>
     <div class="container">
-        <h1>悩み度測定記録</h1>
-        <button onclick="studentsList()" id="studentsListButton" class="bigButton">学生一覧</button>
+        <table width="100%">
+            <tr>
+                <td>
+                    <h1>悩み度測定記録 </h1>
+                </td>
+                <td align="right"><a href="javascript:logout()">ログアウト</a></td>
+            </tr>
+        </table>
+        <hr>
+        <h4>学生一覧</h4>
         <div id="users"></div> <!-- 学生一覧を表示 -->
-        <p id="name"></p>
+        <button onclick="displaySelectedStudent()" class="bigButton">選択した生徒を表示</button>
+        <hr>
+        <h4>悩み度一覧</h4>
         <div id="plots">
             <div class="card"></div>
         </div> <!-- プロットを表示 -->

@@ -60,8 +60,9 @@
 
         async function updatePlot(studentid) {
             // プロットを更新
-            var sql = `select * from Troubles where studentid = "${studentid}";`;
+            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;;`;
             var objects = await osql.connect(sql);
+            objects.reverse();  // データを逆順に配置
 
             // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
@@ -87,7 +88,7 @@
 
         async function updateTable(studentid) {
             // 表を更新
-            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;;`;
+            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;`;
             var objects = await osql.connect(sql);
 
             var html = '';
@@ -122,7 +123,7 @@
     <div class="container">
         <h1>悩み度測定記録</h1>
         <p>学生一覧</p>
-        <div id="users"></div> <!-- プロットを表示 -->
+        <div id="users"></div> <!-- 学生一覧を表示 -->
         <p id="name"></p>
         <div id="plot"></div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->

@@ -216,6 +216,8 @@
             var sql = `SELECT * FROM Troubles WHERE studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;`;  // 直近20件のみ表示
             var objects = await osql.connect(sql);
 
+            objects.reverse();  // データを逆順に配置
+
             // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
                 x: objects.map((obj, index) => index + 1),

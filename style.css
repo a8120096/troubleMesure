@@ -1,32 +1,30 @@
 /* 共通CSS */
-/* スタイルの設定 */
 .container {
     margin: 0 auto;
     padding: 20px;
-    text-align: center;
+    /* text-align: center; */
 }
 
-body {
-    font-family: Arial, sans-serif;
-}
-
-h1 {
-    margin-bottom: 20px;
-}
-
-table {
-    margin: 20px auto;
+p {
+    margin: 5px;
 }
 
 td {
     padding: 5px;
 }
 
+h4 {
+    margin: 5px;
+}
+
 .bigButton {
     font-size: 18px;
-    padding: 10px 20px;
-    margin-top: 10px;
-    margin-bottom: 20px;
+    padding: 10px 15px;
+    margin: 5px;
+}
+
+button {
+    margin: 5px;
 }
 
 #time {
@@ -35,13 +33,16 @@ td {
 
 input[type="radio"] {
     transform: scale(1.5);
-    margin-right: 5px;
 }
 
 #memo {
     width: 200px;
     padding: 10px;
-    margin-bottom: 20px;
+    margin: 5px;
+}
+
+.plot {
+    margin: 0px 15px 0px 0px;
 }
 
 #plots {
@@ -59,5 +60,5 @@ input[type="radio"] {
     margin: 10px;
     padding: 10px;
     width: 400px;
-    height: 600px;
+    /* height: 400px; */
 }

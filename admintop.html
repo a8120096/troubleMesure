@@ -81,7 +81,16 @@
                     title: '悩み度',
                     range: [1, 5]  // y軸の範囲を1から5に固定
                 },
+                margin: {
+                    l: 50,  // 左側の余白
+                    r: 50,  // 右側の余白
+                    t: 50,  // 上側の余白
+                    b: 50   // 下側の余白
+                },
+                width: 350,
+                height: 250
             };
+
 
             Plotly.newPlot('plot', data, layout);
         }
@@ -125,7 +134,7 @@
         <p>学生一覧</p>
         <div id="users"></div> <!-- 学生一覧を表示 -->
         <h4 id="name"></h4>
-        <div id="plot"></div> <!-- プロットを表示 -->
+        <div id="plot" class="plot"></div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>
 </body>

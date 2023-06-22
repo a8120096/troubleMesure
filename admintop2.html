@@ -48,22 +48,21 @@
                 html = html + '</tr>';
             }
             html = html + '</table>';
-            html = html + '<button onclick="displaySelectedStudent()" class="bigButton">選択した生徒を表示</button>';
+            html = html + '<button onclick="allCheck()" id="allCheckButton">全員を選択</button><br><button onclick="displaySelectedStudent()" class="bigButton">選択した生徒を表示</button>';
             document.getElementById('users').innerHTML = html;
         }
 
         function allCheck() {
             // 全員を選択するボタンが押されたとき
             var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            selectedStudents = []; // 選択された生徒の配列をリセット
+            selectedStudents = []; // selectedStudents配列をリセット
             for (var i = 0; i < checkboxes.length; i++) {
                 var checkbox = checkboxes[i];
                 checkbox.checked = true;
-                var studentid = checkbox.parentNode.parentNode.cells[0].innerText; // チェックボックスの親要素のセルから studentid を取得
-                updateSelectedStudents(studentid, checkbox); // updateSelectedStudents 関数を呼び出して選択された生徒を配列に追加
+                var studentid = checkbox.parentNode.parentNode.cells[0].innerText; // チェックボックスの親要素のセルからstudentidを取得
+                updateSelectedStudents(studentid, checkbox);
             }
         }
-
 
         function updateSelectedStudents(studentid, checkbox) {
             // チェックボックスのチェック状態に応じてselectedStudents配列を更新
@@ -71,7 +70,6 @@
                 // チェックされた時は配列に追加
                 selectedStudents.push(studentid);
             } else {
-                selectedStudents
                 // チェックが外された時は配列から削除
                 var index = selectedStudents.indexOf(studentid);
                 if (index != -1) {
@@ -84,9 +82,7 @@
             // 選択された生徒のデータ一覧を表示
             var html = '';
             document.getElementById('plots').innerHTML = ''; // プロットのコンテナをクリア
-            console.log(selectedStudents);
 
-            // 選択された生徒のデータを表示
             for (var i = 0; i < selectedStudents.length; i++) {
                 var selectedStudentid = selectedStudents[i];
                 // 名前を取得
@@ -97,12 +93,11 @@
                 // htmlを用意
                 Shtml = '<div class="cardContent"><div id="' + selectedStudentid + '" class="box">';
                 htmlName = `<h4>${name} さん</h4>`;
-                htmlPlot = '<div id="' + selectedStudentid + 'Plot"></div>';
+                htmlPlot = '<div id="' + selectedStudentid + 'Plot" class="plot"></div>';
                 htmlLastTime = '<div id="' + selectedStudentid + 'LastTime"></div>';
                 htmlLastMemo = '<div id="' + selectedStudentid + 'LastMemo"></div>';
                 Ehtml = '</div></div>';
                 html = Shtml + htmlName + htmlPlot + htmlLastTime + htmlLastMemo + Ehtml;
-                console.log(html);
                 document.getElementById('plots').innerHTML += html;
 
                 // 最後の時間を取得
@@ -114,10 +109,8 @@
                 var memoSql = `select memo from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;;`;
                 var memoObjects = await osql.connect(memoSql);
                 var lastMemo = memoObjects[0].memo;
-                console.log(lastMemo);
 
-                // プロットを更新
-                updatePlot(selectedStudentid);
+                updatePlot(selectedStudentid);  // プロットを更新
                 document.getElementById(selectedStudentid + "LastTime").innerHTML = lastTime;
                 document.getElementById(selectedStudentid + "LastMemo").innerHTML = lastMemo;
             }
@@ -146,6 +139,14 @@
                     title: '悩み度',
                     range: [1, 5]  // y軸の範囲を1から5に固定
                 },
+                margin: {
+                    l: 50,  // 左側の余白
+                    r: 50,  // 右側の余白
+                    t: 50,  // 上側の余白
+                    b: 50   // 下側の余白
+                },
+                width: 350,
+                height: 250
             };
 
             Plotly.newPlot(studentid + 'Plot', data, layout);
@@ -187,8 +188,7 @@
 <body>
     <div class="container">
         <h1>悩み度測定記録</h1>
-        <p>学生一覧</p>
-        <button onclick="allCheck()" id="allCheckButton">全員を選択</button>
+        <button onclick="studentsList()" id="studentsListButton" class="bigButton">学生一覧</button>
         <div id="users"></div> <!-- 学生一覧を表示 -->
         <p id="name"></p>
         <div id="plots">

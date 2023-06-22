@@ -52,35 +52,68 @@
             document.getElementById('users').innerHTML = html;
         }
 
-        function updateSelectedStudents(studentId, checkbox) {
+        function updateSelectedStudents(studentid, checkbox) {
             // チェックボックスのチェック状態に応じてselectedStudentsを更新
             if (checkbox.checked) {
                 // チェックされた時は配列に追加
-                console.log("checked:" + studentId);
-                selectedStudents.push(studentId);
+                selectedStudents.push(studentid);
             } else {
                 selectedStudents
                 // チェックが外された時は配列から削除
-                console.log("unchecked:" + studentId);
-                var index = selectedStudents.indexOf(studentId);
+                var index = selectedStudents.indexOf(studentid);
                 if (index != -1) {
                     selectedStudents.splice(index, 1);
                 }
             }
         }
 
-        function displaySelectedStudent() {
+        async function displaySelectedStudent() {
             console.log(selectedStudents);
+            var html = '';
+            document.getElementById('plots').innerHTML = ''; // プロットのコンテナをクリア
+
             // 選択された生徒のデータを表示
             for (var i = 0; i < selectedStudents.length; i++) {
-                var studentId = selectedStudents[i];
+                var selectedStudentid = selectedStudents[i];
+                // 名前を取得
+                var nameSql = `select name from Users where studentid = "${selectedStudentid}";`;
+                var nameObjects = await osql.connect(nameSql);
+                var name = nameObjects[0].name;
+
+                // htmlを用意
+                Shtml = '<div class="cardContent"><div id="' + selectedStudentid + '" class="box">';
+                htmlName = `<h4>${name} さん</h4>`;
+                htmlPlot = '<div id="' + selectedStudentid + 'Plot"></div>';
+                htmlLastTime = '<div id="' + selectedStudentid + 'LastTime"></div>';
+                htmlLastMemo = '<div id="' + selectedStudentid + 'LastMemo"></div>';
+                Ehtml = '</div></div>';
+                html = Shtml + htmlName + htmlPlot + htmlLastTime + htmlLastMemo + Ehtml;
+                console.log(html);
+                document.getElementById('plots').innerHTML += html;
+
+                // 最後の時間を取得
+                var timeSql = `select createdat from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;;`;
+                var timeObjects = await osql.connect(timeSql);
+                var lastTime = timeObjects[0].createdat;
+
+                // 最後のメモを取得
+                var memoSql = `select memo from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;;`;
+                var memoObjects = await osql.connect(memoSql);
+                var lastMemo = memoObjects[0].memo;
+                console.log(lastMemo);
+
+                // プロットを更新
+                updatePlot(selectedStudentid);
+                document.getElementById(selectedStudentid + "LastTime").innerHTML = lastTime;
+                document.getElementById(selectedStudentid + "LastMemo").innerHTML = lastMemo;
             }
         }
 
         async function updatePlot(studentid) {
             // プロットを更新
-            var sql = `select * from Troubles where studentid = "${studentid}";`;
+            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;`;
             var objects = await osql.connect(sql);
+            objects.reverse();  // データを逆順に配置
 
             // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
@@ -101,7 +134,7 @@
                 },
             };
 
-            Plotly.newPlot('plot', data, layout);
+            Plotly.newPlot(studentid + 'Plot', data, layout);
         }
 
         async function updateTable(studentid) {
@@ -141,10 +174,12 @@
     <div class="container">
         <h1>悩み度測定記録</h1>
         <p>学生一覧</p>
-        <div id="users"></div> <!-- プロットを表示 -->
+        <div id="users"></div> <!-- 学生一覧を表示 -->
         <p id="name"></p>
-        <div id="plot"></div> <!-- プロットを表示 -->
-        <div id="table"></div> <!-- 表を表示 -->
+
+        <div id="plots">
+            <div class="card"></div>
+        </div> <!-- プロットを表示 -->
     </div>
 </body>
 

@@ -41,15 +41,18 @@
                 var user = users[i];
                 html = html + '<td>' + user.studentid + '</td>';
                 html = html + '<td>' + user.name + '</td>';
-                html = html + `<td><button type="button" onclick="display('` + user.studentid + `','` + user.name + `')">表示</button></td>`;
+                html = html + `<td><button type="button" onclick="display('` + user.studentid + `')">表示</button></td>`;
                 html = html + '</tr>';
             }
             html = html + '</table>';
             document.getElementById('users').innerHTML = html;
         }
 
-        function display(studentid, name) {
+        async function display(studentid) {
             // 選択された人のデータを表示する
+            var sql = `select * from Users where studentid = "${studentid}";`;
+            var objects = await osql.connect(sql);
+            var name = objects[0].name;
             document.getElementById('name').innerHTML = `${name} さんのデータ`;
             updatePlot(studentid);
             updateTable(studentid);

@@ -213,9 +213,8 @@
             me = await osql.getMe();
             studentid = me.studentid;
             // バージョン情報を取得
-            var sql = `SELECT * FROM Troubles WHERE studentid = "${studentid}";`;
+            var sql = `SELECT * FROM Troubles WHERE studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;`;  // 直近20件のみ表示
             var objects = await osql.connect(sql);
-            console.log(objects);
 
             // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
@@ -277,6 +276,10 @@
 <body>
     <div class="container">
         <h1>悩み度測定</h1>
+        <hr>
+        <a href="instruction.html" target="_blank">説明ページ</a>
+        <button onclick="logout()" id="logoutButton">Logout</button>
+        <hr>
         <p id="user_name"></p>
         <button onclick="start()" id="startButton" class="bigButton">Start</button>
         <button onclick="stop()" id="stopButton" class="bigButton" disabled>Stop</button>
@@ -318,8 +321,7 @@
         <button onclick="submit()" id="submitButton" class="bigButton">送信</button>
         <p id="submitResult"></p>
         <hr>
-        <a href="instruction.html" target="_blank">説明ページ</a>
-        <button onclick="logout()" id="logoutButton">Logout</button>
+        <h4>直近20件の悩み度の遷移</h4>
         <div id="plot"></div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>

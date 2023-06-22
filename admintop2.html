@@ -52,8 +52,21 @@
             document.getElementById('users').innerHTML = html;
         }
 
+        function allCheck() {
+            // 全員を選択するボタンが押されたとき
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            selectedStudents = []; // 選択された生徒の配列をリセット
+            for (var i = 0; i < checkboxes.length; i++) {
+                var checkbox = checkboxes[i];
+                checkbox.checked = true;
+                var studentid = checkbox.parentNode.parentNode.cells[0].innerText; // チェックボックスの親要素のセルから studentid を取得
+                updateSelectedStudents(studentid, checkbox); // updateSelectedStudents 関数を呼び出して選択された生徒を配列に追加
+            }
+        }
+
+
         function updateSelectedStudents(studentid, checkbox) {
-            // チェックボックスのチェック状態に応じてselectedStudentsを更新
+            // チェックボックスのチェック状態に応じてselectedStudents配列を更新
             if (checkbox.checked) {
                 // チェックされた時は配列に追加
                 selectedStudents.push(studentid);
@@ -68,9 +81,10 @@
         }
 
         async function displaySelectedStudent() {
-            console.log(selectedStudents);
+            // 選択された生徒のデータ一覧を表示
             var html = '';
             document.getElementById('plots').innerHTML = ''; // プロットのコンテナをクリア
+            console.log(selectedStudents);
 
             // 選択された生徒のデータを表示
             for (var i = 0; i < selectedStudents.length; i++) {
@@ -174,9 +188,9 @@
     <div class="container">
         <h1>悩み度測定記録</h1>
         <p>学生一覧</p>
+        <button onclick="allCheck()" id="allCheckButton">全員を選択</button>
         <div id="users"></div> <!-- 学生一覧を表示 -->
         <p id="name"></p>
-
         <div id="plots">
             <div class="card"></div>
         </div> <!-- プロットを表示 -->

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/osql.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.jsのCDNを追加 -->
+
+    <title>Detail</title>
+    <script>
+        osql.requireLogin();
+
+        var me;
+        var studentid;
+
+        $().ready(function () {
+            getProfile();
+            getStudentid().then(function (studentid) {
+                display(studentid);
+            });
+        })
+
+        async function getProfile() {
+            // プロフフィールの取得
+            me = await osql.getMe();
+        }
+
+        async function getStudentid() {
+            // パラメータからstudentid取得
+            var param = osql.getParam("studentid");
+            return param
+        }
+
+        async function display(studentid) {
+            // 生徒のデータを表示する
+            var sql = `select * from Users where studentid = "${studentid}";`;
+            var objects = await osql.connect(sql);
+            var name = objects[0].name;
+            document.getElementById('name').innerHTML = `${name} さん`;
+            updatePlot(studentid);
+            updateTable(studentid);
+        }
+
+        async function updatePlot(studentid) {
+            // プロットを更新
+            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;;`;
+            var objects = await osql.connect(sql);
+            objects.reverse();  // データを逆順に配置
+
+            // バージョンをx軸、悩み度をy軸としてデータを作成
+            var data = [{
+                x: objects.map((obj, index) => index + 1),
+                y: objects.map(obj => obj.trouble),
+                type: 'bar',
+                hovertemplate: '%{text.trouble}<br>%{text.createdat}',  // カーソルを当てたときの表示テンプレート
+                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat }))  // 表示するテキストデータ
+            }];
+
+            var layout = {
+                xaxis: {
+                    title: 'バージョン',
+                },
+                yaxis: {
+                    title: '悩み度',
+                    range: [1, 5]  // y軸の範囲を1から5に固定
+                },
+                margin: {
+                    l: 50,  // 左側の余白
+                    r: 50,  // 右側の余白
+                    t: 50,  // 上側の余白
+                    b: 50   // 下側の余白
+                },
+                width: 350,
+                height: 250
+            };
+
+
+            Plotly.newPlot('plot', data, layout);
+        }
+
+        async function updateTable(studentid) {
+            // 表を更新
+            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;`;
+            var objects = await osql.connect(sql);
+
+            var html = '';
+            html = html + '<table border="1">';
+            html = html + '<tr>';
+            html = html + '<th>悩み度</th>';
+            html = html + '<th>時間</th>';
+            html = html + '<th>メモ</th>';
+            html = html + '</tr>';
+
+            for (var i = 0; i < objects.length; i++) {
+                var object = objects[i];
+
+                html = html + '<tr>';
+                html = html + '<td>' + object.trouble + '</td>';
+                html = html + '<td>' + object.createdat + '</td>';
+                html = html + '<td>' + object.memo + '</td>';
+                html = html + '</tr>';
+            }
+
+            html = html + '</table>';
+            document.getElementById('table').innerHTML = html;
+        }
+
+        function logout() {
+            osql.logout();
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <table width="100%">
+            <tr>
+                <td>
+                    <h1>悩み度測定記録(個別)</h1>
+                </td>
+                <td align="right"><a href="javascript:logout()">ログアウト</a></td>
+            </tr>
+        </table>
+        <hr>
+        <h4 id="name"></h4>
+        <div class="plotArea"><div id="plot"></div></div> <!-- プロットを表示 -->
+        <div id="table"></div> <!-- 表を表示 -->
+    </div>
+</body>
+
+</html>

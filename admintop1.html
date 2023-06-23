@@ -11,18 +11,15 @@
 
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.jsのCDNを追加 -->
 
-    <title>分析・学生詳細</title>
+    <title>分析・学生選択</title>
     <script>
         osql.requireLogin();
 
         var me;
-        var studentid;
 
         $().ready(function () {
             getProfile();
-            getStudentid().then(function (studentid) {
-                display(studentid);
-            });
+            getUsers();
         })
 
         async function getProfile() {
@@ -30,14 +27,26 @@
             me = await osql.getMe();
         }
 
-        async function getStudentid() {
-            // パラメータからstudentid取得
-            var param = osql.getParam("studentid");
-            return param
+        async function getUsers() {
+            // User一覧を取得
+            var sql = 'select * from Users';
+            var users = await osql.connect(sql);
+            var html = '';
+            html = html + '<table border="1">';
+            for (var i = 0; i < users.length; i++) {
+                html = html + '<tr>';
+                var user = users[i];
+                html = html + '<td>' + user.studentid + '</td>';
+                html = html + '<td>' + user.name + '</td>';
+                html = html + `<td><button type="button" onclick="display('` + user.studentid + `')">表示</button></td>`;
+                html = html + '</tr>';
+            }
+            html = html + '</table>';
+            document.getElementById('users').innerHTML = html;
         }
 
         async function display(studentid) {
-            // 生徒のデータを表示する
+            // 選択された人のデータを表示する
             var sql = `select * from Users where studentid = "${studentid}";`;
             var objects = await osql.connect(sql);
             var name = objects[0].name;
@@ -121,11 +130,14 @@
         <table width="100%">
             <tr>
                 <td>
-                    <h1>悩み度測定記録(個別)</h1>
+                    <h1>悩み度測定記録 </h1>
                 </td>
                 <td align="right"><a href="javascript:logout()">ログアウト</a></td>
             </tr>
         </table>
+        <hr>
+        <p>学生一覧</p>
+        <div id="users"></div> <!-- 学生一覧を表示 -->
         <hr>
         <h4 id="name"></h4>
         <div class="plotArea"><div id="plot"></div></div> <!-- プロットを表示 -->

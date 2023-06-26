@@ -16,7 +16,7 @@
         osql.requireLogin();
 
         var me;
-        var studentid;
+        var teacherid;
         var selectedStudents;
 
         $().ready(function () {
@@ -28,7 +28,7 @@
         async function getProfile() {
             // プロフフィールの取得
             me = await osql.getMe();
-            studentid = me.studentid;
+            teacherid = me.studentid;
         }
 
         async function getUsers() {

@@ -280,7 +280,7 @@
             document.getElementById('table').innerHTML = html;
         }
 
-        async function logout() {
+        function logout() {
             osql.logout();
         }
     </script>
@@ -297,8 +297,17 @@
             </tr>
         </table>
         <hr>
-        <p><a href="instruction.html" target="_blank">説明ページ</a>(6/16更新)</p>
-        <p>お知らせ：見た目が崩れてたらキャッシュを削除してください</p>
+        <p><a href="instruction.html" target="_blank">説明ページ</a>(6/26更新)</p>
+        <p>お知らせ：
+        <ul>
+            <li>
+                6/22 見た目が崩れていたらキャッシュを削除してください。
+            </li>
+            <li>
+                6/22 アラートから通知に変更しました。(<a href="notificationSettings.html">通知設定について</a>)
+            </li>
+        </ul>
+        </p>
         <p><a href="https://forms.gle/D2hQckHC5q9AvwuA6" target="_blank">不具合報告</a>：不具合や疑問があったら左のリンクから教えてください</p>
         <hr>
         <p id="user_name"></p>
@@ -341,7 +350,9 @@
         <button onclick="submit()" id="submitButton" class="bigButton">送信</button>
         <p id="submitResult"></p>
         <hr>
-        <div class="plotArea"><div id="plot"></div></div> <!-- プロットを表示 -->
+        <div class="plotArea">
+            <div id="plot"></div>
+        </div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>
 </body>

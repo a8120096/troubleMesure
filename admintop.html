@@ -48,16 +48,29 @@
             }
             html = html + '</table>';
             html = html + '<button onclick="allCheck()" id="allCheckButton">全員を選択</button>';
+            html = html + '<button onclick="allUncheck()" id="allUncheckButton">全員を未選択</button>';
             document.getElementById('users').innerHTML = html;
         }
 
         function allCheck() {
-            // 全員を選択するボタンが押されたとき
+            // 全員を選択ボタンが押されたとき
             var checkboxes = document.querySelectorAll('input[type="checkbox"]');
             selectedStudents = []; // selectedStudents配列をリセット
             for (var i = 0; i < checkboxes.length; i++) {
                 var checkbox = checkboxes[i];
                 checkbox.checked = true;
+                var studentid = checkbox.parentNode.parentNode.cells[0].innerText; // チェックボックスの親要素のセルからstudentidを取得
+                updateSelectedStudents(studentid, checkbox);
+            }
+        }
+
+        function allUncheck() {
+            // 全員を未選択にするボタンが押されたとき
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            selectedStudents = []; // selectedStudents配列をリセット
+            for (var i = 0; i < checkboxes.length; i++) {
+                var checkbox = checkboxes[i];
+                checkbox.checked = false;
                 var studentid = checkbox.parentNode.parentNode.cells[0].innerText; // チェックボックスの親要素のセルからstudentidを取得
                 updateSelectedStudents(studentid, checkbox);
             }
@@ -83,6 +96,7 @@
             document.getElementById('plots').innerHTML = ''; // プロットのコンテナをクリア
 
             for (var i = 0; i < selectedStudents.length; i++) {
+                // selectedStudents配列からstudentidを取得
                 var selectedStudentid = selectedStudents[i];
                 // 名前を取得
                 var nameSql = `select name from Users where studentid = "${selectedStudentid}";`;
@@ -90,8 +104,8 @@
                 var name = nameObjects[0].name;
 
                 // htmlを用意
-                Shtml = '<div class="cardContent"><div id="' + selectedStudentid + '" class="box">';
-                htmlName = `<h4><a href="detail.html?studentid=` + selectedStudentid + `" target="_blank">${name}</a> さん</h4>`;
+                Shtml = '<div class="cardContent"><div id="' + selectedStudentid + 'Area">';
+                htmlName = `<h4><a href="detail.html?studentid=` + selectedStudentid + `" target="_blank">${name}</a> さん <span id="` + selectedStudentid + `Mark">　</span></h4>`;
                 htmlPlot = '<div class="plotArea"><div id="' + selectedStudentid + 'Plot"></div></div>';
                 htmlLastTime = '<div id="' + selectedStudentid + 'LastTime"></div>';
                 htmlLastMemo = '<div id="' + selectedStudentid + 'LastMemo"></div>';
@@ -99,35 +113,72 @@
                 html = Shtml + htmlName + htmlPlot + htmlLastTime + htmlLastMemo + Ehtml;
                 document.getElementById('plots').innerHTML += html;
 
-                // 最後の時間を取得
-                var timeSql = `select createdat from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;`;
-                var timeObjects = await osql.connect(timeSql);
-                var lastTime = timeObjects[0].createdat;
+                // 最後の時間とメモを取得
+                var sql = `select * from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;`;
+                var objects = await osql.connect(sql);
+                var lastTime = objects[0].createdat;
+                var lastMemo = objects[0].memo;
 
-                // 最後のメモを取得
-                var memoSql = `select memo from Troubles where studentid = "${selectedStudentid}" ORDER BY createdat DESC LIMIT 1;;`;
-                var memoObjects = await osql.connect(memoSql);
-                var lastMemo = memoObjects[0].memo;
-
+                updateMark(selectedStudentid);  //マークを更新
                 updatePlot(selectedStudentid);  // プロットを更新
                 document.getElementById(selectedStudentid + "LastTime").innerHTML = lastTime;
                 document.getElementById(selectedStudentid + "LastMemo").innerHTML = lastMemo;
             }
         }
 
+        async function updateMark(studentid) {
+            // マークを更新
+            // 直近3回分のデータを取得
+            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 3;`;
+            var objects = await osql.connect(sql);
+            var color = judgeMark(objects);  // 悩み度の判定
+            document.getElementById(studentid + 'Mark').style.backgroundColor = color;
+        }
+
+        function judgeMark(objects) {
+            // マークの判定 objectsには直近3件のデータが入っている
+            console.log(objects);
+
+            // 平均値
+            var sum = 0;
+            var avg = 0;
+            for (var i = 0; i < objects.length; i++) {
+                sum += Number(objects[i].trouble);  // 合計値
+                avg = Math.round(sum * 10 / objects.length) / 10;  // 平均値(少数第二位を四捨五入)
+            }
+            if (avg == 5) {  // 平均が5(5.5.5)
+                return "red";
+            } else if (avg >= 4.5 && objects[-1] == 5) {  // 最後の悩み度が5かつ平均が4.5以上(4.5.5 or 5.4.5)
+                return "yellow";
+            } else if (avg >= 4 && objects[-1] == 5) {  // 最後の悩み度が5かつ平均が4以上(4.4.5 or 3.4.5 or 4.3.5)
+                return "khaki";
+            } else {
+                return null;
+            }
+        }
+
         async function updatePlot(studentid) {
             // プロットを更新
-            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;`;
+            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 12;`;
             var objects = await osql.connect(sql);
             objects.reverse();  // データを逆順に配置
+
+            var today = new Date();  // 今日の日付を取得
 
             // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
                 x: objects.map((obj, index) => index + 1),
                 y: objects.map(obj => obj.trouble),
                 type: 'bar',
-                hovertemplate: '%{text.trouble}<br>%{text.createdat}',  // カーソルを当てたときの表示テンプレート
-                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat }))  // 表示するテキストデータ
+                hovertemplate: '%{text.trouble}<br>%{text.createdat}<br>%{text.memo}',  // カーソルを当てたときの表示テンプレート
+                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat, memo: obj.memo })),  // 表示するテキストデータ
+                marker: {
+                    color: objects.map(obj => {
+                        // createdatの日付が今日と一致するデータのみ色を濃くする
+                        var date = new Date(obj.createdat);
+                        return date.toDateString() === today.toDateString() ? 'steelblue' : 'lightsteelblue';
+                    })
+                }
             }];
 
             var layout = {
@@ -144,8 +195,8 @@
                     t: 50,  // 上側の余白
                     b: 50   // 下側の余白
                 },
-                width: 350,
-                height: 250
+                width: 300,
+                height: 200
             };
 
             Plotly.newPlot(studentid + 'Plot', data, layout);
@@ -153,7 +204,7 @@
 
         async function updateTable(studentid) {
             // 表を更新
-            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;;`;
+            var sql = `SELECT * FROM Troubles where studentid = "${studentid}" order by createdat desc;`;
             var objects = await osql.connect(sql);
 
             var html = '';
@@ -199,9 +250,52 @@
         <div id="users"></div> <!-- 学生一覧を表示 -->
         <button onclick="displaySelectedStudent()" class="bigButton">選択した生徒を表示</button>
         <hr>
+        <p>※ 悩み度ラベル</p>
+        <!-- 5段階バージョン -->
+        <table border="1">
+            <tr>
+                <td>1</td>
+                <td>順調。やりたいことに対して方法が明確。</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>まあ順調。やりたいことに対して方法の検討がついている。</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>考え中・悩み始め。やりたいことに対して方法を検討している。</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>悩み中。方法を模索している。</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>深刻に悩み中。方向性のヒントが欲しい。</td>
+            </tr>
+        </table>
+        <!-- 4段階バージョン -->
+        <!-- <table border="1">　
+                <tr>
+                    <td>1</td>
+                    <td>順調。やりたいことに対して方法が明確。</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>まあ順調。やりたいことに対して方法の検討がついている。</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>考え中。やりたいことに対して方法を検討している。</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>深刻に悩み中。方向性のヒントが欲しい。</td>
+                </tr>
+                </table> -->
+        <hr>
         <h4>悩み度一覧</h4>
         <div id="plots">
-            <div class="card"></div>
         </div> <!-- プロットを表示 -->
     </div>
 </body>

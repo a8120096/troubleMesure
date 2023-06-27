@@ -11,7 +11,7 @@
 
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.jsのCDNを追加 -->
 
-    <title>分析・学生詳細</title>
+    <title>分析・個別</title>
     <script>
         osql.requireLogin();
 
@@ -48,17 +48,26 @@
 
         async function updatePlot(studentid) {
             // プロットを更新
-            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 20;;`;
+            var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 12;`;
             var objects = await osql.connect(sql);
             objects.reverse();  // データを逆順に配置
+
+            var today = new Date();  // 今日の日付を取得
 
             // バージョンをx軸、悩み度をy軸としてデータを作成
             var data = [{
                 x: objects.map((obj, index) => index + 1),
                 y: objects.map(obj => obj.trouble),
                 type: 'bar',
-                hovertemplate: '%{text.trouble}<br>%{text.createdat}',  // カーソルを当てたときの表示テンプレート
-                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat }))  // 表示するテキストデータ
+                hovertemplate: '%{text.trouble}<br>%{text.createdat}<br>%{text.memo}',  // カーソルを当てたときの表示テンプレート
+                text: objects.map(obj => ({ trouble: obj.trouble, createdat: obj.createdat, memo: obj.memo })),  // 表示するテキストデータ
+                marker: {
+                    color: objects.map(obj => {
+                        // createdatの日付が今日と一致するデータのみ色を濃くする
+                        var date = new Date(obj.createdat);
+                        return date.toDateString() === today.toDateString() ? 'steelblue' : 'lightsteelblue';
+                    })
+                }
             }];
 
             var layout = {
@@ -75,8 +84,8 @@
                     t: 50,  // 上側の余白
                     b: 50   // 下側の余白
                 },
-                width: 350,
-                height: 250
+                width: 300,
+                height: 200
             };
 
 
@@ -128,7 +137,9 @@
         </table>
         <hr>
         <h4 id="name"></h4>
-        <div class="plotArea"><div id="plot"></div></div> <!-- プロットを表示 -->
+        <div class="plotArea">
+            <div id="plot"></div>
+        </div> <!-- プロットを表示 -->
         <div id="table"></div> <!-- 表を表示 -->
     </div>
 </body>

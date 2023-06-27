@@ -291,7 +291,7 @@
         <table width="100%">
             <tr>
                 <td>
-                    <h1>悩み度測定 </h1>
+                    <h1>悩み度測定</h1>
                 </td>
                 <td align="right"><a href="javascript:logout()">ログアウト</a></td>
             </tr>
@@ -314,10 +314,10 @@
         <button onclick="start()" id="startButton" class="bigButton">Start</button>
         <button onclick="stop()" id="stopButton" class="bigButton" disabled>Stop</button>
         <p id="message"></p> <input type="checkbox" id="timerCheckbox" onchange="toggleTimerDisplay()" checked>
-        <label>経過時間 表示/非表示</label>
+        <label>経過時間 表示</label>
         <br>
         <input type="checkbox" id="soundToggle" onchange="toggleSound()" checked>
-        <label for="soundToggle">サウンド オン/オフ</label>
+        <label for="soundToggle">サウンド オン</label>
         <p id="time"><span id="minutes">00</span>:<span id="seconds">00</span></p>
         <table>
             <tr>
@@ -349,6 +349,28 @@
         <br>
         <button onclick="submit()" id="submitButton" class="bigButton">送信</button>
         <p id="submitResult"></p>
+        <table border="1">
+            <tr>
+                <td>1</td>
+                <td>順調。やりたいことに対して方法が明確。</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>まあ順調。やりたいことに対して方法の検討がついている。</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>考え中・悩み始め。やりたいことに対して方法を検討している。</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>悩み中。方法を模索している。</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>深刻に悩み中。方向性のヒントが欲しい。</td>
+            </tr>
+        </table>
         <hr>
         <div class="plotArea">
             <div id="plot"></div>

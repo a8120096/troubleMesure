@@ -20,7 +20,7 @@
 
         $().ready(function () {
             getProfile();
-            getStudentid().then(function (studentid) {
+            getStudentid().then(function (studentid) { // studentidにparamの値が引き継がれる
                 display(studentid);
             });
         })

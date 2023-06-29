@@ -131,14 +131,13 @@
             // 直近3回分のデータを取得
             var sql = `select * from Troubles where studentid = "${studentid}" ORDER BY createdat DESC LIMIT 3;`;
             var objects = await osql.connect(sql);
+            objects.reverse();  // データを逆順に配置
             var color = judgeMark(objects);  // 悩み度の判定
             document.getElementById(studentid + 'Mark').style.backgroundColor = color;
         }
 
         function judgeMark(objects) {
             // マークの判定 objectsには直近3件のデータが入っている
-            console.log(objects);
-
             // 平均値
             var sum = 0;
             var avg = 0;
@@ -146,11 +145,14 @@
                 sum += Number(objects[i].trouble);  // 合計値
                 avg = Math.round(sum * 10 / objects.length) / 10;  // 平均値(少数第二位を四捨五入)
             }
+            var lastTrouble = objects[objects.length - 1].trouble;  // objectsの最後の要素の悩み度を取得
+
+            // レベル分けの処理
             if (avg == 5) {  // 平均が5(5.5.5)
                 return "red";
-            } else if (avg >= 4.5 && objects[-1] == 5) {  // 最後の悩み度が5かつ平均が4.5以上(4.5.5 or 5.4.5)
+            } else if (avg >= 4.5 && lastTrouble == 5) {  // 最後の悩み度が5かつ平均が4.5以上(4.5.5 or 5.4.5)
                 return "yellow";
-            } else if (avg >= 4 && objects[-1] == 5) {  // 最後の悩み度が5かつ平均が4以上(4.4.5 or 3.4.5 or 4.3.5)
+            } else if (avg >= 4 && lastTrouble == 5) {  // 最後の悩み度が5かつ平均が4以上(4.4.5 or 3.4.5 or 4.3.5)
                 return "khaki";
             } else {
                 return null;

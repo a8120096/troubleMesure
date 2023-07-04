@@ -161,7 +161,7 @@
 
         function submit() {
             // 送信ボタンが押されたとき
-            var selectedValue = getTroubleLevel();  // トラブルレベルの値を取得
+            var selectedValue = getTroubleLevel();
             var submittedMemo = getMemo();
 
             // 選択されていないときにメッセージの表示
@@ -259,7 +259,6 @@
 
             Plotly.newPlot('plot', data, layout);
         }
-
 
         async function updateTable() {
             // 表を更新
